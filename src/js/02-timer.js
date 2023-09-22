@@ -1,16 +1,19 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-const inputEl = document.querySelector("#datetime-picker");
-const startBtn = document.querySelector("[data-start]");
-const daysEl = document.querySelector("[data-days]");
-const hoursEl = document.querySelector("[data-hours]");
-const minutesEl = document.querySelector("[data-minutes]");
-const secondsEl = document.querySelector("[data-seconds]");
-
+const inputEl = document.querySelector('#datetime-picker');
+const startBtn = document.querySelector('[data-start]');
+const daysEl = document.querySelector('[data-days]');
+const hoursEl = document.querySelector('[data-hours]');
+const minutesEl = document.querySelector('[data-minutes]');
+const secondsEl = document.querySelector('[data-seconds]');
 
 startBtn.disabled = true;
 
+let timeDifference = 0;
+
+let formatDate = null;
 
 const options = {
   enableTime: true,
@@ -18,14 +21,27 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    if (selectedDates[0] <= new Date()) {
-      window.alert('Please choose a date in the future');
-    } else {
-      startBtn.disabled = false;
-    }
     console.log(selectedDates[0]);
+    currentDifferenceDate(selectedDates[0]);
   },
 };
+
+startBtn.setAttribute('disabled', true);
+
+function currentDifferenceDate(selectedDates) {
+  const currentDate = Date.now();
+
+  if (selectedDates < currentDate) {
+    startBtn.setAttribute('disabled', true);
+    return Notify.failure('Please choose a date in the future');
+  }
+
+  timeDifference = selectedDates.getTime() - currentDate;
+  formatDate = convertMs(timeDifference);
+
+  icons(formatDate);
+  startBtn.removeAttribute('disabled');
+}
 
 const flatP = flatpickr(inputEl, options);
 
@@ -60,6 +76,7 @@ function icons(timeIcon) {
   minutesEl.textContent = addLeadingZero(timeIcon.minutes);
   secondsEl.textContent = addLeadingZero(timeIcon.seconds);
 }
+
 const countdown = () => {
   const selectedDate = flatP.selectedDates[0];
   inputEl.disabled = true;
@@ -74,4 +91,4 @@ const countdown = () => {
   }, 1000);
 };
 
-startBtn.addEventListener("click", countdown);
+startBtn.addEventListener('click', countdown);
